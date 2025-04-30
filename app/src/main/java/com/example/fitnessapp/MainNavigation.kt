@@ -6,7 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fitnessapp.ui.auth.AuthScreen
-import com.example.fitnessapp.ui.exercise.ExerciseScreen
+import com.example.fitnessapp.ui.exercise.ExerciseDbScreen
 import com.example.fitnessapp.ui.food.FoodSuggestionScreen
 import com.example.fitnessapp.ui.home.HomeScreen
 import com.example.fitnessapp.ui.profile.ProfileScreen
@@ -37,8 +37,9 @@ fun MainNavigation() {
             FoodSuggestionScreen(apiKey = "c93fd713252a40d3a193cea2caf2c195") // ← buraya kendi key'ini koy
         }
         composable("exercises") {
-            ExerciseScreen()
+            ExerciseDbScreen()
         }
+
 
     }
 }

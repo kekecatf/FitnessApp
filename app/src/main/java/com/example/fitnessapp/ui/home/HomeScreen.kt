@@ -45,8 +45,9 @@ fun HomeScreen(navController: NavController) {
         Button(onClick = {
             navController.navigate("exercises")
         }) {
-            Text("Egzersiz listesi")
+            Text("Egzersiz Listesi")
         }
+
 
     }
 }

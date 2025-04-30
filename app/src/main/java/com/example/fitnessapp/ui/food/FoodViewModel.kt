@@ -14,6 +14,8 @@ class FoodViewModel : ViewModel() {
 
     private val _foods = MutableStateFlow<List<FoodItem>>(emptyList())
     val foods: StateFlow<List<FoodItem>> = _foods
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     private val api: SpoonacularApiService = Retrofit.Builder()
         .baseUrl("https://api.spoonacular.com/")
@@ -27,8 +29,9 @@ class FoodViewModel : ViewModel() {
                 val response = api.getFoodSuggestions(minCal, maxCal, 5, apiKey)
                 _foods.value = response.results
             } catch (e: Exception) {
-                e.printStackTrace()
+                _errorMessage.value = e.message ?: "Bir hata oluştu"
             }
+
         }
     }
 }

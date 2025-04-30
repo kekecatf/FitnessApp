@@ -9,6 +9,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
@@ -21,6 +22,12 @@ fun FoodSuggestionScreen(
     viewModel: FoodViewModel = viewModel()
 ) {
     val foodList by viewModel.foods.collectAsState()
+
+    val errorMessage by viewModel.errorMessage.collectAsState()
+
+    errorMessage?.let {
+        Text(text = it, color = Color.Red, modifier = Modifier.padding(8.dp))
+    }
 
     LaunchedEffect(Unit) {
         viewModel.fetchFoodSuggestions(minCal, maxCal, apiKey)
