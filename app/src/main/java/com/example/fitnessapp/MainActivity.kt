@@ -14,29 +14,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.fitnessapp.ui.auth.AuthScreen
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
 
+// Uygulama baslangicini burada yapıyoruz
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            AuthScreen()
+            MainNavigation()
         }
-
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    FitnessAppTheme {
-        Greeting("Android")
     }
 }

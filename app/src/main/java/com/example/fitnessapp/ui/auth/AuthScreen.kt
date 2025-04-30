@@ -9,9 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 
 @Composable
-fun AuthScreen(authViewModel: AuthViewModel = viewModel()) {
+fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
@@ -40,12 +41,17 @@ fun AuthScreen(authViewModel: AuthViewModel = viewModel()) {
             authViewModel.registerUser(
                 email,
                 password,
-                onSuccess = { message = "Kayıt başarılı!" },
+                onSuccess = {
+                    navController.navigate("home") {
+                        popUpTo("auth") { inclusive = true }
+                    }
+                },
                 onError = { error -> message = error }
             )
         }) {
             Text("Kayıt Ol")
         }
+
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -53,7 +59,11 @@ fun AuthScreen(authViewModel: AuthViewModel = viewModel()) {
             authViewModel.loginUser(
                 email,
                 password,
-                onSuccess = { message = "Giriş başarılı!" },
+                onSuccess = {
+                    navController.navigate("home") {
+                        popUpTo("auth") { inclusive = true }
+                    }
+                },
                 onError = { error -> message = error }
             )
         }) {
