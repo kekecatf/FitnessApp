@@ -29,11 +29,22 @@ fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel()) {
     val bodyParts by viewModel.bodyParts.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
 
+    val equipmentList by viewModel.equipmentList.collectAsState()
+    val targetList by viewModel.targetList.collectAsState()
+
+    var selectedEquipment by remember { mutableStateOf<String?>(null) }
+    var selectedTarget by remember { mutableStateOf<String?>(null) }
+
+
+
     var selectedBodyPart by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchBodyParts()
         viewModel.fetchExercises()
+        viewModel.fetchEquipmentList()
+        viewModel.fetchTargetList()
+
     }
 
     Column(modifier = Modifier
@@ -41,15 +52,32 @@ fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel()) {
         .padding(16.dp)) {
 
         if (bodyParts.isNotEmpty()) {
-            BodyPartDropdown(
-                label = "Vücut Bölgesi",
-                options = bodyParts,
-                selectedOption = selectedBodyPart,
-                onSelect = {
-                    selectedBodyPart = it
-                    viewModel.fetchExercises(it)
-                }
-            )
+            // Equipment filtre
+            if (equipmentList.isNotEmpty()) {
+                BodyPartDropdown(
+                    label = "Ekipman",
+                    options = equipmentList,
+                    selectedOption = selectedEquipment,
+                    onSelect = {
+                        selectedEquipment = it
+                        it?.let { viewModel.fetchExercisesByEquipment(it) }
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            // Target filtre
+            if (targetList.isNotEmpty()) {
+                BodyPartDropdown(
+                    label = "Hedef Kas",
+                    options = targetList,
+                    selectedOption = selectedTarget,
+                    onSelect = {
+                        selectedTarget = it
+                        it?.let { viewModel.fetchExercisesByTarget(it) }
+                    }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -57,12 +85,15 @@ fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel()) {
         Button(
             onClick = {
                 selectedBodyPart = null
+                selectedEquipment = null
+                selectedTarget = null
                 viewModel.fetchExercises()
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Filtreyi Kaldır")
         }
+
 
         Spacer(modifier = Modifier.height(8.dp))
 

@@ -22,6 +22,12 @@ class ExerciseDbViewModel : ViewModel() {
     private val _bodyParts = MutableStateFlow<List<String>>(emptyList())
     val bodyParts: StateFlow<List<String>> = _bodyParts.asStateFlow()
 
+    private val _equipmentList = MutableStateFlow<List<String>>(emptyList())
+    val equipmentList = _equipmentList.asStateFlow()
+
+    private val _targetList = MutableStateFlow<List<String>>(emptyList())
+    val targetList = _targetList.asStateFlow()
+
     fun fetchBodyParts() {
         viewModelScope.launch {
             try {
@@ -43,6 +49,46 @@ class ExerciseDbViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 _errorMessage.value = "Egzersizler alınamadı: ${e.message}"
+            }
+        }
+    }
+
+    fun fetchEquipmentList() {
+        viewModelScope.launch {
+            try {
+                _equipmentList.value = ApiClient.apiService.getEquipmentList()
+            } catch (e: Exception) {
+                _errorMessage.value = "Ekipmanlar alınamadı: ${e.message}"
+            }
+        }
+    }
+
+    fun fetchTargetList() {
+        viewModelScope.launch {
+            try {
+                _targetList.value = ApiClient.apiService.getTargetList()
+            } catch (e: Exception) {
+                _errorMessage.value = "Hedef kaslar alınamadı: ${e.message}"
+            }
+        }
+    }
+
+    fun fetchExercisesByEquipment(equipment: String) {
+        viewModelScope.launch {
+            try {
+                _exercises.value = ApiClient.apiService.getExercisesByEquipment(equipment)
+            } catch (e: Exception) {
+                _errorMessage.value = "Ekipmana göre egzersiz alınamadı: ${e.message}"
+            }
+        }
+    }
+
+    fun fetchExercisesByTarget(target: String) {
+        viewModelScope.launch {
+            try {
+                _exercises.value = ApiClient.apiService.getExercisesByTarget(target)
+            } catch (e: Exception) {
+                _errorMessage.value = "Hedef kasa göre egzersiz alınamadı: ${e.message}"
             }
         }
     }
