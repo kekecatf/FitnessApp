@@ -4,6 +4,8 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
+
+// ApiClient.kt
 object ApiClient {
     private const val BASE_URL = "https://exercisedb.p.rapidapi.com/"
 
