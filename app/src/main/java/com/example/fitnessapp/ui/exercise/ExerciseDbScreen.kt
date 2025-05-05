@@ -78,6 +78,7 @@ fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel()) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
+
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -99,6 +100,19 @@ fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel()) {
 
         errorMessage?.let {
             Text(text = it, color = MaterialTheme.colorScheme.error)
+        }
+        if (exercises.isEmpty()) {
+            Text(
+                text = "Seçilen filtrelere uygun egzersiz bulunamadı.",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.titleMedium
+            )
+        } else {
+            LazyColumn {
+                items(exercises) { exercise ->
+                    ExerciseCard(exercise)
+                }
+            }
         }
 
         LazyColumn {
