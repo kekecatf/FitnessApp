@@ -18,9 +18,10 @@ import com.example.fitnessapp.ui.theme.FitnessAppTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            MainNavigation()
+            FitnessAppTheme {
+                MainNavigation()
+            }
         }
     }
 }

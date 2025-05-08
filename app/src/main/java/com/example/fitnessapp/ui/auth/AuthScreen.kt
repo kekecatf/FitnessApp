@@ -1,5 +1,6 @@
 package com.example.fitnessapp.ui.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -7,8 +8,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -16,14 +19,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.example.fitnessapp.R
+import com.example.fitnessapp.ui.theme.FitnessAppTheme
 
 
 @Composable
@@ -44,6 +53,16 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "Logo",
+            modifier = Modifier
+                .size(240.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -54,7 +73,8 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
             ),
             keyboardActions = KeyboardActions(
                 onNext = { passwordFocusRequester.requestFocus() }
-            )
+            ),
+            modifier = Modifier.fillMaxWidth()
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -63,7 +83,9 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
             value = password,
             onValueChange = { password = it },
             label = { Text("Şifre") },
-            modifier = Modifier.focusRequester(passwordFocusRequester),
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(passwordFocusRequester),
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             trailingIcon = {
                 val image = if (passwordVisible)
@@ -90,7 +112,7 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
                             email,
                             password,
                             onSuccess = {
-                                navController.navigate("home") {
+                                navController?.navigate("home") {
                                     popUpTo("auth") { inclusive = true }
                                 }
                             },
@@ -100,68 +122,74 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
                     }
                 }
             )
-
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Button(onClick = {
-            when {
-                email.isBlank() || password.isBlank() -> {
-                    message = "Email ve şifre boş bırakılamaz."
+        Button(
+            onClick = {
+                when {
+                    email.isBlank() || password.isBlank() -> {
+                        message = "Email ve şifre boş bırakılamaz."
+                    }
+                    !isValidEmail(email) -> {
+                        message = "Geçerli bir email adresi girin."
+                    }
+                    !isValidPassword(password) -> {
+                        message = "Şifre en az 6 karakter olmalı."
+                    }
+                    else -> {
+                        authViewModel.registerUser(
+                            email,
+                            password,
+                            onSuccess = {
+                                navController?.navigate("home") {
+                                    popUpTo("auth") { inclusive = true }
+                                }
+                            },
+                            onError = { error -> message = error }
+                        )
+                    }
                 }
-                !isValidEmail(email) -> {
-                    message = "Geçerli bir email adresi girin."
-                }
-                !isValidPassword(password) -> {
-                    message = "Şifre en az 6 karakter olmalı."
-                }
-                else -> {
-                    authViewModel.registerUser(
-                        email,
-                        password,
-                        onSuccess = {
-                            navController.navigate("home") {
-                                popUpTo("auth") { inclusive = true }
-                            }
-                        },
-                        onError = { error -> message = error }
-                    )
-                }
-            }
-        }) {
-            Text("Kayıt Ol")
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Kayıt Ol", color = Color.White)
         }
 
 
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        Button(onClick = {
-            when {
-                email.isBlank() || password.isBlank() -> {
-                    message = "Email ve şifre boş bırakılamaz."
+        Button(
+            onClick = {
+                when {
+                    email.isBlank() || password.isBlank() -> {
+                        message = "Email ve şifre boş bırakılamaz."
+                    }
+                    !isValidEmail(email) -> {
+                        message = "Geçerli bir email adresi girin."
+                    }
+                    else -> {
+                        authViewModel.loginUser(
+                            email,
+                            password,
+                            onSuccess = {
+                                navController?.navigate("home") {
+                                    popUpTo("auth") { inclusive = true }
+                                }
+                            },
+                            onError = { error -> message = error }
+                        )
+                    }
                 }
-                !isValidEmail(email) -> {
-                    message = "Geçerli bir email adresi girin."
-                }
-                else -> {
-                    authViewModel.loginUser(
-                        email,
-                        password,
-                        onSuccess = {
-                            navController.navigate("home") {
-                                popUpTo("auth") { inclusive = true }
-                            }
-                        },
-                        onError = { error -> message = error }
-                    )
-                }
-            }
-        }) {
-            Text("Giriş Yap")
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Giriş Yap", color = Color.White)
         }
-
 
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -178,3 +206,5 @@ fun isValidEmail(email: String): Boolean {
 fun isValidPassword(password: String): Boolean {
     return password.length >= 6
 }
+
+
