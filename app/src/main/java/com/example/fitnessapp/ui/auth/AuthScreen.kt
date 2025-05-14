@@ -1,5 +1,10 @@
 package com.example.fitnessapp.ui.auth
 
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
@@ -20,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
@@ -32,7 +38,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.fitnessapp.R
+import com.example.fitnessapp.ui.auth.GoogleAuthUiClient
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -43,7 +53,25 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
     var passwordVisible by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val passwordFocusRequester = remember { FocusRequester() }
-
+    // Google girisi degiskenleri
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult(),
+        onResult = { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val intent = result.data ?: return@rememberLauncherForActivityResult
+                GoogleAuthUiClient(context).signInWithIntent(intent) { success, error ->
+                    if (success) {
+                        navController.navigate("home") {
+                            popUpTo("auth") { inclusive = true }
+                        }
+                    } else {
+                        Toast.makeText(context, error ?: "Giriş hatası", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    )
 
 
     Column(
@@ -140,14 +168,16 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
                     }
                     else -> {
                         authViewModel.registerUser(
-                            email,
-                            password,
+                            email = email,
+                            password = password,
                             onSuccess = {
-                                navController?.navigate("home") {
+                                navController.navigate("profile_setup") {
                                     popUpTo("auth") { inclusive = true }
                                 }
                             },
-                            onError = { error -> message = error }
+                            onError = { error ->
+                                message = error
+                            }
                         )
                     }
                 }
@@ -157,6 +187,7 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
         ) {
             Text("Kayıt Ol", color = Color.White)
         }
+
 
 
 
@@ -191,6 +222,20 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
             Text("Giriş Yap", color = Color.White)
         }
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(onClick = {
+            CoroutineScope(Dispatchers.Main).launch {
+                val intentSender = GoogleAuthUiClient(context).signIn()
+                intentSender?.let {
+                    launcher.launch(
+                        IntentSenderRequest.Builder(it).build()
+                    )
+                }
+            }
+        }) {
+            Text("Google ile Giriş Yap")
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 

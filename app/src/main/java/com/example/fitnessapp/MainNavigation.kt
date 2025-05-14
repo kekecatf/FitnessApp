@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.fitnessapp.ui.auth.AuthScreen
+import com.example.fitnessapp.ui.auth.ProfileSetupScreen
 import com.example.fitnessapp.ui.exercise.ExerciseDbScreen
 import com.example.fitnessapp.ui.food.FoodSuggestionScreen
 import com.example.fitnessapp.ui.home.HomeScreen
@@ -26,6 +27,9 @@ fun MainNavigation() {
     ) {
         composable("auth") {
             AuthScreen(navController)
+        }
+        composable("profile_setup"){
+            ProfileSetupScreen(navController)
         }
         composable("home") {
             HomeScreen(navController)
