@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,13 +41,14 @@ import androidx.navigation.compose.rememberNavController
 import com.example.fitnessapp.R
 import com.example.fitnessapp.ui.auth.GoogleAuthUiClient
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
+import com.example.fitnessapp.ui.theme.ThemeViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
+fun AuthScreen(navController: NavController, themeViewModel: ThemeViewModel, authViewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
@@ -72,174 +74,186 @@ fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = view
             }
         }
     )
+    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
 
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.logo),
-            contentDescription = "Logo",
+
+    // Tüm ekran temaya göre sarılıyor
+    FitnessAppTheme(darkTheme = isDarkTheme) {
+        val backgroundColor = if (isDarkTheme) Color.Black else Color.White
+        Column(
             modifier = Modifier
-                .size(240.dp)
-                .align(Alignment.CenterHorizontally)
-        )
+                .fillMaxSize()
+                .background(backgroundColor)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text("Email") },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Next,
-                keyboardType = KeyboardType.Email
-            ),
-            keyboardActions = KeyboardActions(
-                onNext = { passwordFocusRequester.requestFocus() }
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text("Şifre") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .focusRequester(passwordFocusRequester),
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            trailingIcon = {
-                val image = if (passwordVisible)
-                    Icons.Default.Visibility
-                else
-                    Icons.Default.VisibilityOff
-
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(imageVector = image, contentDescription = if (passwordVisible) "Şifreyi gizle" else "Şifreyi göster")
-                }
-            },
-            keyboardOptions = KeyboardOptions.Default.copy(
-                imeAction = ImeAction.Done,
-                keyboardType = KeyboardType.Number
-            ),
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    if (email.isBlank() || password.isBlank()) {
-                        message = "Email ve şifre boş bırakılamaz."
-                    } else if (!isValidEmail(email)) {
-                        message = "Geçerli bir email adresi girin."
-                    } else {
-                        authViewModel.loginUser(
-                            email,
-                            password,
-                            onSuccess = {
-                                navController?.navigate("home") {
-                                    popUpTo("auth") { inclusive = true }
-                                }
-                            },
-                            onError = { error -> message = error }
-                        )
-                        focusManager.clearFocus()
-                    }
-                }
-            )
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                when {
-                    email.isBlank() || password.isBlank() -> {
-                        message = "Email ve şifre boş bırakılamaz."
-                    }
-                    !isValidEmail(email) -> {
-                        message = "Geçerli bir email adresi girin."
-                    }
-                    !isValidPassword(password) -> {
-                        message = "Şifre en az 6 karakter olmalı."
-                    }
-                    else -> {
-                        authViewModel.registerUser(
-                            email = email,
-                            password = password,
-                            onSuccess = {
-                                navController.navigate("profile_setup") {
-                                    popUpTo("auth") { inclusive = true }
-                                }
-                            },
-                            onError = { error ->
-                                message = error
-                            }
-                        )
-                    }
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-            modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Kayıt Ol", color = Color.White)
-        }
-
-
-
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = {
-                when {
-                    email.isBlank() || password.isBlank() -> {
-                        message = "Email ve şifre boş bırakılamaz."
-                    }
-                    !isValidEmail(email) -> {
-                        message = "Geçerli bir email adresi girin."
-                    }
-                    else -> {
-                        authViewModel.loginUser(
-                            email,
-                            password,
-                            onSuccess = {
-                                navController?.navigate("home") {
-                                    popUpTo("auth") { inclusive = true }
-                                }
-                            },
-                            onError = { error -> message = error }
-                        )
-                    }
-                }
-            },
-            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Giriş Yap", color = Color.White)
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(onClick = {
-            CoroutineScope(Dispatchers.Main).launch {
-                val intentSender = GoogleAuthUiClient(context).signIn()
-                intentSender?.let {
-                    launcher.launch(
-                        IntentSenderRequest.Builder(it).build()
-                    )
-                }
+            // 🌗 Tema değiştirme butonu
+            IconButton(
+                onClick = { themeViewModel.toggleTheme() },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Icon(
+                    painter = painterResource(
+                        id = if (isDarkTheme) R.drawable.sun else R.drawable.moon
+                    ),
+                    contentDescription = "Tema Değiştir",
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
             }
-        }) {
-            Text("Google ile Giriş Yap")
+            Image(
+                painter = painterResource(id = R.drawable.logo),
+                contentDescription = "Logo",
+                modifier = Modifier
+                    .size(240.dp)
+                    .align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Next,
+                    keyboardType = KeyboardType.Email
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { passwordFocusRequester.requestFocus() }
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Şifre") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(passwordFocusRequester),
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                trailingIcon = {
+                    val image = if (passwordVisible)
+                        Icons.Default.Visibility
+                    else
+                        Icons.Default.VisibilityOff
+
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = image,
+                            contentDescription = if (passwordVisible) "Şifreyi gizle" else "Şifreyi göster"
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done,
+                    keyboardType = KeyboardType.Number
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        if (email.isBlank() || password.isBlank()) {
+                            message = "Email ve şifre boş bırakılamaz."
+                        } else if (!isValidEmail(email)) {
+                            message = "Geçerli bir email adresi girin."
+                        } else {
+                            authViewModel.loginUser(
+                                email,
+                                password,
+                                onSuccess = {
+                                    navController?.navigate("home") {
+                                        popUpTo("auth") { inclusive = true }
+                                    }
+                                },
+                                onError = { error -> message = error }
+                            )
+                            focusManager.clearFocus()
+                        }
+                    }
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    when {
+                        email.isBlank() || password.isBlank() -> {
+                            message = "Email ve şifre boş bırakılamaz."
+                        }
+
+                        !isValidEmail(email) -> {
+                            message = "Geçerli bir email adresi girin."
+                        }
+
+                        !isValidPassword(password) -> {
+                            message = "Şifre en az 6 karakter olmalı."
+                        }
+
+                        else -> {
+                            authViewModel.loginUser(
+                                email,
+                                password,
+                                onSuccess = {
+                                    navController.navigate("home") {
+                                        popUpTo("auth") { inclusive = true }
+                                    }
+                                },
+                                onError = {
+                                    // Eğer giriş başarısızsa, kayıt dene
+                                    authViewModel.registerUser(
+                                        email = email,
+                                        password = password,
+                                        onSuccess = {
+                                            navController.navigate("profile_setup") {
+                                                popUpTo("auth") { inclusive = true }
+                                            }
+                                        },
+                                        onError = { regError ->
+                                            message = "Giriş/Kayıt başarısız: $regError"
+                                        }
+                                    )
+                                }
+                            )
+                        }
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Giriş Yap / Kayıt Ol", color = Color.White)
+            }
+
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(onClick = {
+                CoroutineScope(Dispatchers.Main).launch {
+                    val intentSender = GoogleAuthUiClient(context).signIn()
+                    intentSender?.let {
+                        launcher.launch(
+                            IntentSenderRequest.Builder(it).build()
+                        )
+                    }
+                }
+            }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.google_logo),
+                    contentDescription = "Google Logo",
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Google ile Giriş Yap")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(text = message)
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(text = message)
     }
 }
 
