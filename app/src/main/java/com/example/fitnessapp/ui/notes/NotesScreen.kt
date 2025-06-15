@@ -1,5 +1,6 @@
 package com.example.fitnessapp.ui.notes
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -14,11 +15,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.example.fitnessapp.ui.theme.FitnessAppTheme
+import com.example.fitnessapp.ui.theme.ThemeViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun NotesScreen() {
+fun NotesScreen(themeViewModel: ThemeViewModel) {
     var todoText by remember { mutableStateOf("") }
     val todoItems = remember { mutableStateListOf<TodoItem>() }
     val user = FirebaseAuth.getInstance().currentUser
@@ -40,85 +43,102 @@ fun NotesScreen() {
         }
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
-                value = todoText,
-                onValueChange = { todoText = it },
-                label = { Text("To-do") },
-                modifier = Modifier.weight(1f),
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    imeAction = ImeAction.Done,
-                    keyboardType = KeyboardType.Text
-                )
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = {
-                if (todoText.isNotBlank()) {
-                    todoItems.add(TodoItem(todoText, false))
-                    todoText = ""
-                }
-            }) {
-                Text("Ekle")
-            }
-        }
+    val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
 
-        Spacer(modifier = Modifier.height(16.dp))
 
-        todoItems.forEachIndexed { index, item ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-            ) {
-                Checkbox(
-                    checked = item.isDone,
-                    onCheckedChange = {
-                        todoItems[index] = item.copy(isDone = it)
-                    }
-                )
-                Text(
-                    text = item.text,
-                    style = if (item.isDone)
-                        TextStyle(
-                            textDecoration = TextDecoration.LineThrough,
-                            color = Color.Gray
-                        )
-                    else
-                        TextStyle.Default,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = { todoItems.removeAt(index) }) {
-                    Icon(Icons.Default.Delete, contentDescription = "Sil")
-                }
-            }
-        }
+    // Tüm ekran temaya göre sarılıyor
+    FitnessAppTheme(darkTheme = isDarkTheme) {
 
-        Spacer(modifier = Modifier.height(16.dp))
+        val backgroundColor = if (isDarkTheme) Color.Black else Color.White
 
-        Button(
-            onClick = {
-                user?.let {
-                    val notesData = todoItems.map { note ->
-                        mapOf("text" to note.text, "isDone" to note.isDone)
-                    }
-                    firestore.collection("users").document(it.uid)
-                        .update("notes", notesData)
-                        .addOnSuccessListener {
-                            message = "Notlar kaydedildi."
-                        }
-                        .addOnFailureListener { e ->
-                            message = "Hata: ${e.message}"
-                        }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(backgroundColor)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Kaydet")
-        }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(
+                    value = todoText,
+                    onValueChange = { todoText = it },
+                    label = { Text("To-do") },
+                    modifier = Modifier.weight(1f),
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Text
+                    )
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = {
+                    if (todoText.isNotBlank()) {
+                        todoItems.add(TodoItem(todoText, false))
+                        todoText = ""
+                    }
+                }) {
+                    Text("Ekle")
+                }
+            }
 
-        if (message.isNotBlank()) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = message, color = MaterialTheme.colorScheme.primary)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            todoItems.forEachIndexed { index, item ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+                ) {
+                    Checkbox(
+                        checked = item.isDone,
+                        onCheckedChange = {
+                            todoItems[index] = item.copy(isDone = it)
+                        }
+                    )
+                    Text(
+                        text = item.text,
+                        style = if (item.isDone)
+                            TextStyle(
+                                textDecoration = TextDecoration.LineThrough,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        else
+                            TextStyle(
+                                color = MaterialTheme.colorScheme.onBackground
+                            ),
+                        modifier = Modifier.weight(1f)
+                    )
+                    IconButton(onClick = { todoItems.removeAt(index) }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Sil",tint = MaterialTheme.colorScheme.onBackground)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    user?.let {
+                        val notesData = todoItems.map { note ->
+                            mapOf("text" to note.text, "isDone" to note.isDone)
+                        }
+                        firestore.collection("users").document(it.uid)
+                            .update("notes", notesData)
+                            .addOnSuccessListener {
+                                message = "Notlar kaydedildi."
+                            }
+                            .addOnFailureListener { e ->
+                                message = "Hata: ${e.message}"
+                            }
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Kaydet")
+            }
+
+            if (message.isNotBlank()) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = message, color = MaterialTheme.colorScheme.primary)
+            }
         }
     }
 }

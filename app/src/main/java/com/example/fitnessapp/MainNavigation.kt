@@ -57,7 +57,7 @@ fun MainNavigation() {
                 ExerciseDbScreen(themeViewModel = themeViewModel)
             }
             composable("notes") {
-                NotesScreen() // Henüz yazmadıysak bir sonraki adımda gelecek
+                NotesScreen(themeViewModel = themeViewModel) // Henüz yazmadıysak bir sonraki adımda gelecek
             }
     }
     }

@@ -20,6 +20,8 @@ class ProfileViewModel : ViewModel() {
     val error: StateFlow<String?> = _error
 
     fun saveProfile(
+        name: String,
+        lastName: String,
         height: Int,
         weight: Int,
         targetWeight: Int,
@@ -35,6 +37,8 @@ class ProfileViewModel : ViewModel() {
         }
 
         val profileData = mapOf(
+            "name" to name,
+            "lastName" to lastName,
             "height" to height,
             "weight" to weight,
             "targetWeight" to targetWeight,
@@ -58,26 +62,6 @@ class ProfileViewModel : ViewModel() {
                     onError("Kayıt başarısız: ${exception.message}")
                 }
         }
-    }
-
-    fun fetchProfile(
-        onLoaded: (height: Int, weight: Int, targetWeight: Int, gender: String, trainingDays: Int) -> Unit,
-        onError: (String) -> Unit
-    ) {
-        val user = auth.currentUser ?: return onError("Oturum açmış kullanıcı yok.")
-        firestore.collection("users").document(user.uid)
-            .get()
-            .addOnSuccessListener { doc ->
-                val height = doc.getLong("height")?.toInt() ?: 0
-                val weight = doc.getLong("weight")?.toInt() ?: 0
-                val targetWeight = doc.getLong("targetWeight")?.toInt() ?: 0
-                val gender = doc.getString("gender") ?: ""
-                val trainingDays = doc.getLong("trainingDays")?.toInt() ?: 0
-                onLoaded(height, weight, targetWeight, gender, trainingDays)
-            }
-            .addOnFailureListener {
-                onError("Veri alınamadı: ${it.message}")
-            }
     }
 }
 

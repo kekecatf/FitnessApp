@@ -17,6 +17,9 @@ fun ProfileSetupScreen(
     navController: NavController,
     viewModel: ProfileViewModel = viewModel()
 ) {
+    var name by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+
     var height by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var targetWeight by remember { mutableStateOf("") }
@@ -38,6 +41,22 @@ fun ProfileSetupScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.Center
     ) {
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Ad") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = lastName,
+            onValueChange = { lastName = it },
+            label = { Text("Soyad") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
         OutlinedTextField(
             value = height,
             onValueChange = { height = it },
@@ -136,12 +155,22 @@ fun ProfileSetupScreen(
         Spacer(modifier = Modifier.height(24.dp))
         Button(
             onClick = {
-                if (height.isBlank() || weight.isBlank() || targetWeight.isBlank() || gender.isBlank() || trainingDays.isBlank()) {
+                if (
+                    name.isBlank() ||
+                    lastName.isBlank() ||
+                    height.isBlank() ||
+                    weight.isBlank() ||
+                    targetWeight.isBlank() ||
+                    gender.isBlank() ||
+                    trainingDays.isBlank()
+                ) {
                     message = "Lütfen tüm alanları doldurun"
                     return@Button
                 }
 
                 viewModel.saveProfile(
+                    name = name,
+                    lastName = lastName,
                     height = height.toInt(),
                     weight = weight.toInt(),
                     targetWeight = targetWeight.toInt(),
@@ -152,8 +181,9 @@ fun ProfileSetupScreen(
                             popUpTo("profile_setup") { inclusive = true }
                         }
                     },
-                    onError = { msg -> message = msg }
+                    onError = { msg -> message = msg }1
                 )
+
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -164,6 +194,7 @@ fun ProfileSetupScreen(
         Text(text = message, color = MaterialTheme.colorScheme.error)
     }
 }
+
 
 
 
