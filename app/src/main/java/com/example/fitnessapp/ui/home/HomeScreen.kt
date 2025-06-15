@@ -22,7 +22,8 @@ import androidx.navigation.NavController
 import com.example.fitnessapp.R
 import com.google.firebase.auth.FirebaseAuth
 import com.example.fitnessapp.ui.theme.ThemeViewModel
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fitnessapp.ui.theme.FitnessAppTheme
 
 
 @Composable
@@ -30,93 +31,87 @@ fun HomeScreen(navController: NavController,themeViewModel: ThemeViewModel) {
     val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: "Kullanıcı"
     val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
 
-        // 🔹 Arka plan resmi
-
-
-        // 🔹 (İsteğe bağlı) karartma katmanı — görünürlüğü artırır
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.3f))
-        )
-
-        // 🔹 Asıl içerik
+    // Tüm ekran temaya göre sarılıyor
+    FitnessAppTheme(darkTheme = isDarkTheme) {
+        val backgroundColor = if (isDarkTheme) Color.Black else Color.White
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
+                .background(backgroundColor)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
-            IconButton(
-                onClick = { themeViewModel.toggleTheme() },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = if (isDarkTheme) R.drawable.sun else R.drawable.moon
+                IconButton(
+                    onClick = { themeViewModel.toggleTheme() },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (isDarkTheme) R.drawable.sun else R.drawable.moon
+                        ),
+                        contentDescription = "Tema Değiştir",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+                // Logo veya profil resmi
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "Logo",
+                    modifier = Modifier
+                        .size(240.dp)
+                        .padding(top = 24.dp, bottom = 16.dp)
+                )
+
+                Text(
+                    text = "Hoş geldin",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontFamily = FontFamily.Serif, // veya customFont
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 28.sp,
+                        color = Color.White
                     ),
-                    contentDescription = "Tema Değiştir",
-                    tint = MaterialTheme.colorScheme.onBackground
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-            }
-            // Logo veya profil resmi
-            Image(
-                painter = painterResource(id = R.drawable.logo),
-                contentDescription = "Logo",
-                modifier = Modifier
-                    .size(240.dp)
-                    .padding(top = 24.dp, bottom = 16.dp)
-            )
 
-            Text(
-                text = "Hoş geldin",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontFamily = FontFamily.Serif, // veya customFont
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 28.sp,
-                    color = Color.White
+
+                Text(
+                    text = userEmail,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontFamily = FontFamily.Serif, // veya customFont
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp
+                    ),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
-            )
 
+                Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                text = userEmail,
-                style = MaterialTheme.typography.bodyMedium.copy(
-                    fontFamily = FontFamily.Serif, // veya customFont
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = Color.White
-                ),
-                color = MaterialTheme.colorScheme.onBackground
-            )
+                HomeActionButton("Profilini Güncelle") {
+                    navController.navigate("profile")
+                }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                HomeActionButton("Yemek Listesi") {
+                    navController.navigate("foods")
+                }
 
-            HomeActionButton("Profilini Güncelle") {
-                navController.navigate("profile")
-            }
+                HomeActionButton("Egzersiz Listesi") {
+                    navController.navigate("exercises")
+                }
 
-            HomeActionButton("Yemek Listesi") {
-                navController.navigate("foods")
-            }
+                HomeActionButton("Notlarım") {
+                    navController.navigate("notes")
+                }
 
-            HomeActionButton("Egzersiz Listesi") {
-                navController.navigate("exercises")
-            }
-
-            HomeActionButton("Notlarım") {
-                navController.navigate("notes")
-            }
-
-            HomeActionButton("Çıkış Yap") {
-                FirebaseAuth.getInstance().signOut()
-                navController.navigate("auth") {
-                    popUpTo("home") { inclusive = true }
+                HomeActionButton("Çıkış Yap") {
+                    FirebaseAuth.getInstance().signOut()
+                    navController.navigate("auth") {
+                        popUpTo("home") { inclusive = true }
+                    }
                 }
             }
-        }
     }
 }
 

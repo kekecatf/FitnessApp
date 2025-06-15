@@ -18,6 +18,8 @@ import com.google.firebase.auth.FirebaseAuth
 import com.example.fitnessapp.ui.notes.NotesScreen
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
 import com.example.fitnessapp.ui.theme.ThemeViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+
 
 
 // Sayfa gecislerini buradan ayarliyoruz
@@ -46,23 +48,17 @@ fun MainNavigation() {
                 HomeScreen(navController,themeViewModel = themeViewModel)
             }
             composable("profile") {
-                ProfileScreen(navController)
+                ProfileScreen(navController, themeViewModel = themeViewModel)
             }
             composable("foods") {
                 FoodSuggestionScreen(apiKey = "c93fd713252a40d3a193cea2caf2c195") // ← buraya kendi key'ini koy
             }
             composable("exercises") {
-                ExerciseDbScreen()
+                ExerciseDbScreen(themeViewModel = themeViewModel)
             }
             composable("notes") {
                 NotesScreen() // Henüz yazmadıysak bir sonraki adımda gelecek
             }
     }
-
-
-
-
-
-
     }
 }

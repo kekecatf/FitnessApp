@@ -20,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -222,7 +223,9 @@ fun AuthScreen(navController: NavController, themeViewModel: ThemeViewModel, aut
                         }
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Giriş Yap / Kayıt Ol", color = Color.White)
@@ -240,7 +243,9 @@ fun AuthScreen(navController: NavController, themeViewModel: ThemeViewModel, aut
                         )
                     }
                 }
-            }) {
+            },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.google_logo),
                     contentDescription = "Google Logo",
