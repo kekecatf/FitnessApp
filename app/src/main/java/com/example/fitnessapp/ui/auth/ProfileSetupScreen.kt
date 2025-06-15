@@ -181,7 +181,7 @@ fun ProfileSetupScreen(
                             popUpTo("profile_setup") { inclusive = true }
                         }
                     },
-                    onError = { msg -> message = msg }1
+                    onError = { msg -> message = msg }
                 )
 
             },
