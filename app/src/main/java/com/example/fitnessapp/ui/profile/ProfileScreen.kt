@@ -1,5 +1,6 @@
 package com.example.fitnessapp.ui.profile
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,9 +10,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.fitnessapp.R
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
@@ -22,7 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController, themeViewModel: ThemeViewModel) {
+fun ProfileScreen(navController: NavController) {
     var height by remember { mutableStateOf("") }
     var weight by remember { mutableStateOf("") }
     var targetWeight by remember { mutableStateOf("") }
@@ -33,6 +37,11 @@ fun ProfileScreen(navController: NavController, themeViewModel: ThemeViewModel) 
     val firestore = FirebaseFirestore.getInstance()
     val user = FirebaseAuth.getInstance().currentUser
 
+    val themeViewModel: ThemeViewModel = viewModel(
+        factory = ViewModelProvider.AndroidViewModelFactory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
     val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
     // Mevcut kullanıcı verilerini çek
     LaunchedEffect(Unit) {
@@ -58,18 +67,18 @@ fun ProfileScreen(navController: NavController, themeViewModel: ThemeViewModel) 
             horizontalAlignment = Alignment.CenterHorizontally
 
         ) {
-            IconButton(
-                onClick = { themeViewModel.toggleTheme() },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = if (isDarkTheme) R.drawable.sun else R.drawable.moon
-                    ),
-                    contentDescription = "Tema Değiştir",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+//            IconButton(
+//                onClick = { themeViewModel.toggleTheme() },
+//                modifier = Modifier.align(Alignment.End)
+//            ) {
+//                Icon(
+//                    painter = painterResource(
+//                        id = if (isDarkTheme) R.drawable.sun else R.drawable.moon
+//                    ),
+//                    contentDescription = "Tema Değiştir",
+//                    tint = MaterialTheme.colorScheme.onBackground
+//                )
+//            }
             OutlinedTextField(
                 value = height,
                 onValueChange = { height = it },

@@ -1,16 +1,19 @@
 package com.example.fitnessapp.ui.home
 
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -18,44 +21,58 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import com.example.fitnessapp.R
 import com.google.firebase.auth.FirebaseAuth
 import com.example.fitnessapp.ui.theme.ThemeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fitnessapp.ui.auth.ProfileViewModel
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
 
 
 @Composable
-fun HomeScreen(navController: NavController,themeViewModel: ThemeViewModel) {
+fun HomeScreen(navController: NavController, profileViewModel: ProfileViewModel = viewModel()) {
     val userEmail = FirebaseAuth.getInstance().currentUser?.email ?: "Kullanıcı"
+    val userName by profileViewModel.name.collectAsState()
+
+    val themeViewModel: ThemeViewModel = viewModel(
+        factory = ViewModelProvider.AndroidViewModelFactory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
     val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
 
+    // İlk açılışta yükleme işlemi başlat
+    LaunchedEffect(Unit) {
+        profileViewModel.loadUserProfile()
+    }
 
     // Tüm ekran temaya göre sarılıyor
     FitnessAppTheme(darkTheme = isDarkTheme) {
-        val backgroundColor = if (isDarkTheme) Color.Black else Color.White
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(backgroundColor)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        val backgroundImageRes = if (isDarkTheme) {
+            R.drawable.ana_sayfa_koyu
+        } else {
+            R.drawable.ana_sayfa_aydinlik
+        }
 
-        ) {
-                IconButton(
-                    onClick = { themeViewModel.toggleTheme() },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Icon(
-                        painter = painterResource(
-                            id = if (isDarkTheme) R.drawable.sun else R.drawable.moon
-                        ),
-                        contentDescription = "Tema Değiştir",
-                        tint = MaterialTheme.colorScheme.onBackground
-                    )
-                }
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painter = painterResource(id = backgroundImageRes),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+
+            ) {
+
                 // Logo veya profil resmi
                 Image(
                     painter = painterResource(id = R.drawable.logo),
@@ -78,7 +95,7 @@ fun HomeScreen(navController: NavController,themeViewModel: ThemeViewModel) {
 
 
                 Text(
-                    text = userEmail,
+                    text = userName,
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontFamily = FontFamily.Serif, // veya customFont
                         fontWeight = FontWeight.Bold,
@@ -89,8 +106,8 @@ fun HomeScreen(navController: NavController,themeViewModel: ThemeViewModel) {
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                HomeActionButton("Profilini Güncelle") {
-                    navController.navigate("profile")
+                HomeActionButton("Ayarlar") {
+                    navController.navigate("settings")
                 }
 
                 HomeActionButton("Yemek Listesi") {
@@ -112,6 +129,7 @@ fun HomeScreen(navController: NavController,themeViewModel: ThemeViewModel) {
                     }
                 }
             }
+        }
     }
 }
 

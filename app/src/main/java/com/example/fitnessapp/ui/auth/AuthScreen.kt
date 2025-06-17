@@ -1,6 +1,7 @@
 package com.example.fitnessapp.ui.auth
 
 import android.app.Activity
+import android.app.Application
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
@@ -49,7 +51,7 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun AuthScreen(navController: NavController, themeViewModel: ThemeViewModel, authViewModel: AuthViewModel = viewModel()) {
+fun AuthScreen(navController: NavController, authViewModel: AuthViewModel = viewModel()) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
@@ -58,22 +60,46 @@ fun AuthScreen(navController: NavController, themeViewModel: ThemeViewModel, aut
     val passwordFocusRequester = remember { FocusRequester() }
     // Google girisi degiskenleri
     val context = LocalContext.current
+    val googleAuthUiClient = remember { GoogleAuthUiClient(context) }
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult(),
         onResult = { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 val intent = result.data ?: return@rememberLauncherForActivityResult
-                GoogleAuthUiClient(context).signInWithIntent(intent) { success, error ->
-                    if (success) {
-                        navController.navigate("home") {
+
+                googleAuthUiClient.signInWithIntent(
+                    intent = intent,
+                    onResult = { success, error ->
+                        if (success) {
+                            authViewModel.loginWithGoogle(
+                                onSuccess = {
+                                    navController.navigate("home") {
+                                        popUpTo("auth") { inclusive = true }
+                                    }
+                                },
+                                onError = {
+                                    Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+                                }
+                            )
+                        } else {
+                            Toast.makeText(context, error ?: "Giriş hatası", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onProfileMissing = {
+                        navController.navigate("profile_setup") {
                             popUpTo("auth") { inclusive = true }
                         }
-                    } else {
-                        Toast.makeText(context, error ?: "Giriş hatası", Toast.LENGTH_SHORT).show()
                     }
-                }
+                )
             }
         }
+    )
+
+
+    val themeViewModel: ThemeViewModel = viewModel(
+        factory = ViewModelProvider.AndroidViewModelFactory(
+            LocalContext.current.applicationContext as Application
+        )
     )
     val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
 
@@ -91,19 +117,20 @@ fun AuthScreen(navController: NavController, themeViewModel: ThemeViewModel, aut
             horizontalAlignment = Alignment.CenterHorizontally
 
         ) {
-            // 🌗 Tema değiştirme butonu
-            IconButton(
-                onClick = { themeViewModel.toggleTheme() },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = if (isDarkTheme) R.drawable.sun else R.drawable.moon
-                    ),
-                    contentDescription = "Tema Değiştir",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
-            }
+//            // 🌗 Tema değiştirme butonu
+//            IconButton(
+//                onClick = { themeViewModel.toggleTheme() },
+//                modifier = Modifier.align(Alignment.End)
+//            ) {
+//                Icon(
+//                    painter = painterResource(
+//                        id = if (isDarkTheme) R.drawable.sun else R.drawable.moon
+//                    ),
+//                    contentDescription = "Tema Değiştir",
+//                    tint = MaterialTheme.colorScheme.onBackground
+//                )
+//            }
+
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = "Logo",
@@ -228,7 +255,7 @@ fun AuthScreen(navController: NavController, themeViewModel: ThemeViewModel, aut
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Giriş Yap / Kayıt Ol", color = Color.White)
+                Text("Giriş Yap / Kayıt Ol")
             }
 
 
@@ -236,7 +263,7 @@ fun AuthScreen(navController: NavController, themeViewModel: ThemeViewModel, aut
 
             Button(onClick = {
                 CoroutineScope(Dispatchers.Main).launch {
-                    val intentSender = GoogleAuthUiClient(context).signIn()
+                    val intentSender = googleAuthUiClient.signIn()
                     intentSender?.let {
                         launcher.launch(
                             IntentSenderRequest.Builder(it).build()

@@ -19,6 +19,10 @@ class ProfileViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error
 
+    private val _name = MutableStateFlow<String>("")
+    val name: StateFlow<String> = _name
+
+
     fun saveProfile(
         name: String,
         lastName: String,
@@ -62,6 +66,24 @@ class ProfileViewModel : ViewModel() {
                     onError("Kayıt başarısız: ${exception.message}")
                 }
         }
+    }
+    fun loadUserProfile() {
+        val uid = auth.currentUser?.uid ?: return
+        _loading.value = true
+
+        firestore.collection("users")
+            .document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+                _loading.value = false
+                if (document != null && document.exists()) {
+                    _name.value = document.getString("name") ?: ""
+                }
+            }
+            .addOnFailureListener { e ->
+                _loading.value = false
+                _error.value = e.message
+            }
     }
 }
 

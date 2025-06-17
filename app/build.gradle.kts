@@ -96,4 +96,8 @@ dependencies {
     // Google girisi
     implementation("com.google.android.gms:play-services-auth:20.7.0")
 
+    // DataStore
+    implementation ("androidx.datastore:datastore-preferences:1.0.0")
+
+
 }

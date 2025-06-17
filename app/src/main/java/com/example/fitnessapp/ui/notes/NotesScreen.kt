@@ -1,5 +1,6 @@
 package com.example.fitnessapp.ui.notes
 
+import android.app.Application
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -10,18 +11,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
 import com.example.fitnessapp.ui.theme.ThemeViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun NotesScreen(themeViewModel: ThemeViewModel) {
+fun NotesScreen() {
     var todoText by remember { mutableStateOf("") }
     val todoItems = remember { mutableStateListOf<TodoItem>() }
     val user = FirebaseAuth.getInstance().currentUser
@@ -43,6 +47,11 @@ fun NotesScreen(themeViewModel: ThemeViewModel) {
         }
     }
 
+    val themeViewModel: ThemeViewModel = viewModel(
+        factory = ViewModelProvider.AndroidViewModelFactory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
     val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
 
 
@@ -58,11 +67,12 @@ fun NotesScreen(themeViewModel: ThemeViewModel) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Spacer(modifier = Modifier.height(32.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedTextField(
                     value = todoText,
                     onValueChange = { todoText = it },
-                    label = { Text("To-do") },
+                    label = { Text("Yapılacaklar") },
                     modifier = Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions.Default.copy(
                         imeAction = ImeAction.Done,

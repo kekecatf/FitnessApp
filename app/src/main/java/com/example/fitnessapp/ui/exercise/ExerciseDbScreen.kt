@@ -1,5 +1,6 @@
 package com.example.fitnessapp.ui.exercise
 
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,8 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
@@ -33,7 +36,7 @@ import com.example.fitnessapp.ui.theme.ThemeViewModel
 
 // ExerciseDbScreen.kt
 @Composable
-fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel(), themeViewModel: ThemeViewModel) {
+fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel()) {
     val exercises by viewModel.exercises.collectAsState()
     val bodyParts by viewModel.bodyParts.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
@@ -55,6 +58,11 @@ fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel(), themeViewMode
 
     }
 
+    val themeViewModel: ThemeViewModel = viewModel(
+        factory = ViewModelProvider.AndroidViewModelFactory(
+            LocalContext.current.applicationContext as Application
+        )
+    )
     val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
 
 
@@ -67,6 +75,7 @@ fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel(), themeViewMode
                 .background(backgroundColor)
                 .padding(16.dp)
         ) {
+            Spacer(modifier = Modifier.height(32.dp))
 
             if (bodyParts.isNotEmpty()) {
                 // Equipment filtre
@@ -96,19 +105,6 @@ fun ExerciseDbScreen(viewModel: ExerciseDbViewModel = viewModel(), themeViewMode
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-            }
-            // 🌗 Tema değiştirme butonu
-            IconButton(
-                onClick = { themeViewModel.toggleTheme() },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Icon(
-                    painter = painterResource(
-                        id = if (isDarkTheme) R.drawable.sun else R.drawable.moon
-                    ),
-                    contentDescription = "Tema Değiştir",
-                    tint = MaterialTheme.colorScheme.onBackground
-                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))

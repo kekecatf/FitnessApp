@@ -19,7 +19,7 @@ import com.example.fitnessapp.ui.notes.NotesScreen
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
 import com.example.fitnessapp.ui.theme.ThemeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-
+import com.example.fitnessapp.ui.home.SettingsScreen
 
 
 // Sayfa gecislerini buradan ayarliyoruz
@@ -38,27 +38,31 @@ fun MainNavigation() {
             startDestination = if (isLoggedIn) "home" else "auth"
         ) {
             composable("auth") {
-                AuthScreen(navController, themeViewModel = themeViewModel)
+                AuthScreen(navController)
             }
 
             composable("profile_setup"){
                 ProfileSetupScreen(navController)
             }
             composable("home") {
-                HomeScreen(navController,themeViewModel = themeViewModel)
+                HomeScreen(navController)
             }
             composable("profile") {
-                ProfileScreen(navController, themeViewModel = themeViewModel)
+                ProfileScreen(navController)
             }
             composable("foods") {
                 FoodSuggestionScreen(apiKey = "c93fd713252a40d3a193cea2caf2c195") // ← buraya kendi key'ini koy
             }
             composable("exercises") {
-                ExerciseDbScreen(themeViewModel = themeViewModel)
+                ExerciseDbScreen()
             }
             composable("notes") {
-                NotesScreen(themeViewModel = themeViewModel) // Henüz yazmadıysak bir sonraki adımda gelecek
+                NotesScreen() // Henüz yazmadıysak bir sonraki adımda gelecek
             }
-    }
+            composable("settings") {
+                SettingsScreen(navController = navController)
+            }
+
+        }
     }
 }

@@ -99,37 +99,24 @@ class AuthViewModel : ViewModel() {
             }
     }
 
-    /**
-     * Kullanıcı profil verilerini (boy, kilo, hedef kilo, cinsiyet, antrenman günü) Firestore’a yazar.
-     */
-    fun updateUserProfile(
-        heightCm: Int,
-        weightKg: Int,
-        targetWeightKg: Int,
-        gender: String,
-        trainingDaysPerWeek: Int,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
+
+    fun checkUserProfileExists(
+        onExists: () -> Unit,
+        onNotExists: () -> Unit
     ) {
-        val uid = auth.currentUser?.uid
-        if (uid == null) {
-            onError("Önce giriş yapmalısınız.")
-            return
-        }
-        val profileData = mapOf(
-            "heightCm" to heightCm,
-            "weightKg" to weightKg,
-            "targetWeightKg" to targetWeightKg,
-            "gender" to gender,
-            "trainingDaysPerWeek" to trainingDaysPerWeek,
-        )
-        firestore.collection("users")
-            .document(uid)
-            .set(profileData, SetOptions.merge())
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { e -> onError(e.message ?: "Profil güncelleme hatası") }
+        val uid = auth.currentUser?.uid ?: return onNotExists()
+
+        firestore.collection("users").document(uid).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    onExists()
+                } else {
+                    onNotExists()
+                }
+            }
+            .addOnFailureListener {
+                onNotExists() // hata varsa yönlendir
+            }
     }
 
-    fun isUserAuthenticated(): Boolean = auth.currentUser != null
-    fun signOut() = auth.signOut()
 }
