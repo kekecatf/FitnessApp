@@ -55,26 +55,43 @@ class GoogleAuthUiClient(
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val uid = auth.currentUser?.uid
-                    if (uid != null) {
-                        // Firestore'da kullanıcı profili var mı kontrolü
-                        firestore.collection("users").document(uid).get()
+                    val email = auth.currentUser?.email
+
+                    if (uid != null && email != null) {
+                        val userDocRef = firestore.collection("users").document(uid)
+
+                        userDocRef.get()
                             .addOnSuccessListener { document ->
                                 if (document.exists()) {
+                                    // Kullanıcı profili zaten var
                                     onResult(true, null)
                                 } else {
-                                    onProfileMissing()
+                                    // Profil yok, Firestore'a boş bir belge oluştur
+                                    val userData = mapOf(
+                                        "email" to email,
+                                        "name" to "",  // İsteğe bağlı doldurulabilir
+                                        "createdAt" to System.currentTimeMillis()
+                                    )
+
+                                    userDocRef.set(userData)
+                                        .addOnSuccessListener {
+                                            onProfileMissing() // yönlendir
+                                        }
+                                        .addOnFailureListener { e ->
+                                            onResult(false, "Profil oluşturulamadı: ${e.message}")
+                                        }
                                 }
                             }
                             .addOnFailureListener { e ->
-                                Log.e("Firestore", "Kullanıcı kontrol hatası: $e")
-                                onResult(false, "Profil kontrol hatası")
+                                onResult(false, "Kullanıcı kontrol hatası: ${e.message}")
                             }
                     } else {
-                        onResult(false, "UID alınamadı.")
+                        onResult(false, "Kullanıcı bilgileri alınamadı.")
                     }
                 } else {
                     onResult(false, task.exception?.message)
                 }
             }
     }
+
 }

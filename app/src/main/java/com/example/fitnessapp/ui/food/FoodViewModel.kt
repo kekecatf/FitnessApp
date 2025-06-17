@@ -2,36 +2,32 @@ package com.example.fitnessapp.ui.food
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.fitnessapp.data.model.FoodItem
-import com.example.fitnessapp.data.remote.SpoonacularApiService
+import com.example.fitnessapp.data.api.NutritionixClient
+import com.example.fitnessapp.data.model.FoodRequest
+import com.example.fitnessapp.data.model.Nutrient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.HttpException
+import java.io.IOException
 
 class FoodViewModel : ViewModel() {
+    private val _nutrients = MutableStateFlow<List<Nutrient>>(emptyList())
+    val nutrients: StateFlow<List<Nutrient>> get() = _nutrients
 
-    private val _foods = MutableStateFlow<List<FoodItem>>(emptyList())
-    val foods: StateFlow<List<FoodItem>> = _foods
-    private val _errorMessage = MutableStateFlow<String?>(null)
-    val errorMessage: StateFlow<String?> = _errorMessage
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> get() = _error
 
-    private val api: SpoonacularApiService = Retrofit.Builder()
-        .baseUrl("https://api.spoonacular.com/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-        .create(SpoonacularApiService::class.java)
-
-    fun fetchFoodSuggestions(minCal: Int, maxCal: Int, apiKey: String) {
+    fun fetchNutrition(query: String) {
         viewModelScope.launch {
             try {
-                val response = api.getFoodSuggestions(minCal, maxCal, 5, apiKey)
-                _foods.value = response.results
+                val response = NutritionixClient.api.getNutrition(FoodRequest(query))
+                _nutrients.value = response.foods
+                _error.value = null
             } catch (e: Exception) {
-                _errorMessage.value = e.message ?: "Bir hata oluştu"
+                _error.value = "Hata: ${e.message}"
             }
-
         }
+
     }
 }

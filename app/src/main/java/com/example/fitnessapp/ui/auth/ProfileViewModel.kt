@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -52,21 +53,20 @@ class ProfileViewModel : ViewModel() {
         )
 
         _loading.value = true
-        viewModelScope.launch {
-            firestore.collection("users")
-                .document(user.uid)
-                .update(profileData)
-                .addOnSuccessListener {
-                    _loading.value = false
-                    onSuccess()
-                }
-                .addOnFailureListener { exception ->
-                    _loading.value = false
-                    _error.value = exception.message
-                    onError("Kayıt başarısız: ${exception.message}")
-                }
-        }
+        firestore.collection("users")
+            .document(user.uid)
+            .set(profileData, SetOptions.merge()) // 🔁 update yerine güvenli set
+            .addOnSuccessListener {
+                _loading.value = false
+                onSuccess()
+            }
+            .addOnFailureListener { exception ->
+                _loading.value = false
+                _error.value = exception.message
+                onError("Kayıt başarısız: ${exception.message}")
+            }
     }
+
     fun loadUserProfile() {
         val uid = auth.currentUser?.uid ?: return
         _loading.value = true

@@ -11,7 +11,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.fitnessapp.ui.auth.AuthScreen
 import com.example.fitnessapp.ui.auth.ProfileSetupScreen
 import com.example.fitnessapp.ui.exercise.ExerciseDbScreen
-import com.example.fitnessapp.ui.food.FoodSuggestionScreen
 import com.example.fitnessapp.ui.home.HomeScreen
 import com.example.fitnessapp.ui.profile.ProfileScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -19,6 +18,7 @@ import com.example.fitnessapp.ui.notes.NotesScreen
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
 import com.example.fitnessapp.ui.theme.ThemeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.fitnessapp.ui.food.FoodScreen
 import com.example.fitnessapp.ui.home.SettingsScreen
 
 
@@ -51,8 +51,9 @@ fun MainNavigation() {
                 ProfileScreen(navController)
             }
             composable("foods") {
-                FoodSuggestionScreen(apiKey = "c93fd713252a40d3a193cea2caf2c195") // ← buraya kendi key'ini koy
+                FoodScreen(navController)
             }
+
             composable("exercises") {
                 ExerciseDbScreen()
             }

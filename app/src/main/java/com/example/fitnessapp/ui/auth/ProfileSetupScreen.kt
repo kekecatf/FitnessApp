@@ -77,7 +77,7 @@ fun ProfileSetupScreen(
 
             OutlinedTextField(
                 value = height,
-                onValueChange = { height = it },
+                onValueChange = { if (it.all { char -> char.isDigit() }) height = it },
                 label = { Text("Boy (cm)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -86,7 +86,7 @@ fun ProfileSetupScreen(
 
             OutlinedTextField(
                 value = weight,
-                onValueChange = { weight = it },
+                onValueChange = { if (it.all { char -> char.isDigit() }) weight = it },
                 label = { Text("Kilo (kg)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -95,7 +95,7 @@ fun ProfileSetupScreen(
 
             OutlinedTextField(
                 value = targetWeight,
-                onValueChange = { targetWeight = it },
+                onValueChange = { if (it.all { char -> char.isDigit() }) targetWeight = it },
                 label = { Text("Hedef Kilo (kg)") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -186,22 +186,25 @@ fun ProfileSetupScreen(
                         return@Button
                     }
 
-                    viewModel.saveProfile(
-                        name = name,
-                        lastName = lastName,
-                        height = height.toInt(),
-                        weight = weight.toInt(),
-                        targetWeight = targetWeight.toInt(),
-                        gender = gender,
-                        trainingDays = trainingDays.toInt(),
-                        onSuccess = {
-                            navController.navigate("home") {
-                                popUpTo("profile_setup") { inclusive = true }
-                            }
-                        },
-                        onError = { msg -> message = msg }
-                    )
-
+                    try {
+                        viewModel.saveProfile(
+                            name = name,
+                            lastName = lastName,
+                            height = height.toInt(),
+                            weight = weight.toInt(),
+                            targetWeight = targetWeight.toInt(),
+                            gender = gender,
+                            trainingDays = trainingDays.toInt(),
+                            onSuccess = {
+                                navController.navigate("home") {
+                                    popUpTo("profile_setup") { inclusive = true }
+                                }
+                            },
+                            onError = { msg -> message = msg }
+                        )
+                    } catch (e: NumberFormatException) {
+                        message = "Lütfen boy, kilo ve hedef kilo alanlarına geçerli sayılar girin."
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
