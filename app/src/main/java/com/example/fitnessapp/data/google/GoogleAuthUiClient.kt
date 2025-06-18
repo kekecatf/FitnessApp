@@ -1,4 +1,4 @@
-package com.example.fitnessapp.ui.auth
+package com.example.fitnessapp.data.google
 
 import android.content.Context
 import android.content.Intent

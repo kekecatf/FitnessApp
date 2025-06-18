@@ -19,23 +19,14 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.fitnessapp.data.projectfiles.NoteItem
 import com.example.fitnessapp.ui.theme.FitnessAppTheme
 import com.example.fitnessapp.ui.theme.ThemeViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.launch
-import com.example.fitnessapp.data.projectfiles.NoteApiClient
 
 
 @Composable
-fun NotesScreen() {
+fun NotesScreen(viewModel: TodoViewModel = viewModel()) {
     var todoText by remember { mutableStateOf("") }
-    val todoItems = remember { mutableStateListOf<TodoItem>() }
-    val user = FirebaseAuth.getInstance().currentUser
-    val uid = user?.uid ?: ""
-    var message by remember { mutableStateOf("") }
-
+    val todoItems by viewModel.notes.collectAsState()
     val themeViewModel: ThemeViewModel = viewModel(
         factory = ViewModelProvider.AndroidViewModelFactory(
             LocalContext.current.applicationContext as Application
@@ -43,23 +34,11 @@ fun NotesScreen() {
     )
     val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()
 
-    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    // Notları yükle (PHP'den çek)
-    LaunchedEffect(uid) {
-        if (uid.isNotBlank()) {
-            try {
-                val notes = NoteApiClient.api.getNotes(uid)
-                todoItems.clear()
-                notes.forEach {
-                    todoItems.add(TodoItem(it.text, it.isDone))
-                }
-            } catch (e: Exception) {
-                message = "Notlar alınamadı: ${e.message}"
-            }
-        }
+    LaunchedEffect(Unit) {
+        viewModel.loadNotes() // ilk açılışta verileri yükle
     }
-
     FitnessAppTheme(darkTheme = isDarkTheme) {
         val backgroundColor = if (isDarkTheme) Color.Black else Color.White
 
@@ -85,25 +64,8 @@ fun NotesScreen() {
                 Spacer(modifier = Modifier.width(8.dp))
                 Button(onClick = {
                     if (todoText.isNotBlank()) {
-                        val newItem = TodoItem(todoText, false)
-                        todoItems.add(newItem)
+                        viewModel.addNote(todoText)
                         todoText = ""
-
-                        // API’ye gönder
-                        coroutineScope.launch {
-                            try {
-                                val response = NoteApiClient.api.saveNote(
-                                    NoteItem(uid = uid, text = newItem.text, isDone = newItem.isDone)
-                                )
-                                if (response.isSuccessful) {
-                                    message = "Not kaydedildi"
-                                } else {
-                                    message = "Sunucu hatası: ${response.code()}"
-                                }
-                            } catch (e: Exception) {
-                                message = "Bağlantı hatası: ${e.message}"
-                            }
-                        }
                     }
                 }) {
                     Text("Ekle")
@@ -112,7 +74,7 @@ fun NotesScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            todoItems.forEachIndexed { index, item ->
+            todoItems.forEach { item ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -122,7 +84,7 @@ fun NotesScreen() {
                     Checkbox(
                         checked = item.isDone,
                         onCheckedChange = {
-                            todoItems[index] = item.copy(isDone = it)
+                            viewModel.toggleNote(item)
                         }
                     )
                     Text(
@@ -136,20 +98,15 @@ fun NotesScreen() {
                             TextStyle(color = MaterialTheme.colorScheme.onBackground),
                         modifier = Modifier.weight(1f)
                     )
-                    IconButton(onClick = { todoItems.removeAt(index) }) {
+                    IconButton(onClick = { viewModel.deleteNote(item) }) {
                         Icon(Icons.Default.Delete, contentDescription = "Sil", tint = MaterialTheme.colorScheme.onBackground)
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (message.isNotBlank()) {
-                Text(text = message, color = MaterialTheme.colorScheme.primary)
-            }
         }
     }
 }
+
 
 //@Composable
 //fun NotesScreen() {

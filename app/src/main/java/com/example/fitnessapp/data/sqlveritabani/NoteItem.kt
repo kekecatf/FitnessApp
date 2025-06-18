@@ -1,4 +1,4 @@
-package com.example.fitnessapp.data.projectfiles
+package com.example.fitnessapp.data.sqlveritabani
 
 data class NoteItem(
     val uid: String,

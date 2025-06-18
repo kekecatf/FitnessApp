@@ -1,4 +1,4 @@
-package com.example.fitnessapp.data.projectfiles
+package com.example.fitnessapp.data.sqlveritabani
 
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

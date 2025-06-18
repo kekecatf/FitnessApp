@@ -1,4 +1,4 @@
-package com.example.fitnessapp.data.projectfiles
+package com.example.fitnessapp.data.sqlveritabani
 
 import retrofit2.Response
 import retrofit2.http.Body
