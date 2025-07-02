@@ -20,6 +20,7 @@ import com.example.fitnessapp.ui.theme.ThemeViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.fitnessapp.ui.food.FoodScreen
 import com.example.fitnessapp.ui.home.SettingsScreen
+import com.example.fitnessapp.ui.recommendation.RecommendationScreen
 
 
 // Sayfa gecislerini buradan ayarliyoruz
@@ -58,7 +59,10 @@ fun MainNavigation() {
                 ExerciseDbScreen()
             }
             composable("notes") {
-                NotesScreen() // Henüz yazmadıysak bir sonraki adımda gelecek
+                NotesScreen()
+            }
+            composable("recommendation") {
+                RecommendationScreen()
             }
             composable("settings") {
                 SettingsScreen(navController = navController)

@@ -104,6 +104,8 @@ fun HomeScreen(
                 HomeActionButton("🍽️ Yemek Listesi") { navController.navigate("foods") }
                 HomeActionButton("🏋️‍♂️ Egzersiz Listesi") { navController.navigate("exercises") }
                 HomeActionButton("⚙️ Ayarlar") { navController.navigate("settings") }
+                HomeActionButton("📋 Günlük Planım") { navController.navigate("recommendation") }
+
                 HomeActionButton("🚪 Çıkış Yap") {
                     FirebaseAuth.getInstance().signOut()
                     navController.navigate("auth") {
